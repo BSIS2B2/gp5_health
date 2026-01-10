@@ -1,0 +1,92 @@
+/* ================================
+   FONT IMPORT
+================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* ================================
+   GLOBAL APP
+================================ */
+
+html,
+body,
+.stApp,
+section.main {
+    background-color: #f6fbff;
+    font-family: 'Inter', sans-serif;
+}
+
+
+/* ================================
+   AUTH CARD
+================================ */
+
+.auth-card {
+    background: #ffffff;
+    max-width: 420px;
+    width: 100%;
+    margin: 80px auto;
+    padding: 32px;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(11, 83, 148, 0.08);
+    text-align: center;
+}
+
+
+/* ================================
+   GENERAL CARD
+================================ */
+
+.card {
+    background: #ffffff;
+    max-width: 760px;
+    width: 100%;
+    margin: auto;
+    padding: 32px;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(11, 83, 148, 0.06);
+}
+
+
+/* ================================
+   TEXT STYLES
+================================ */
+
+.header-title {
+    color: #0b5394;
+    font-weight: 700;
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.subtle {
+    color: #666666;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.center-label {
+    font-weight: 600;
+    color: #000000;
+    margin-top: 8px;
+    font-size: 14px;
+    text-align: left;
+}
+
+
+/* ================================
+   BUTTONS (SCOPED)
+================================ */
+
+.stApp div.stButton>button {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 10px;
+    width: 180px;
+    transition: all 0.2s ease-in-out;
+}
+
+.stApp div.stButton>button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(11, 83, 148, 0.15);
+}

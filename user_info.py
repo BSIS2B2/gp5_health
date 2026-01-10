@@ -1,68 +1,136 @@
-# user_info.py 
-import streamlit as st # type: ignore
-import pandas as pd # type: ignore
-# Re-using the navigation bar from the medication tracker module
-from medication_tracker import top_nav_bar 
+import streamlit as st  # type: ignore
+from medication_tracker import top_nav_bar
 
-# --- USER INFO PAGE ---
+
+# --------------------------
+# USER INFO / PROFILE PAGE
+# --------------------------
 def user_info_page():
     """
-    Displays the current user's personal information with high-contrast labels 
-    and values for improved visibility.
+    Displays and allows editing of the current user's profile information
+    in a clean Account Settings layout.
     """
+
+    # Top navigation (UNCHANGED)
     top_nav_bar("User Profile & Info")
-    st.write("")  # spacing
+    st.write("")
+
+    # --------------------------
+    # USER VALIDATION
+    # --------------------------
+    if "current_user" not in st.session_state:
+        st.error("No active session. Please log in again.")
+        return
 
     current_email = st.session_state.current_user
-    
-    # 1. User check and data retrieval
-    if current_email not in st.session_state.users:
+
+    if "users" not in st.session_state or current_email not in st.session_state.users:
         st.error("User data not found. Please log in again.")
         return
 
     user_data = st.session_state.users[current_email]
 
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("### My Profile Details", unsafe_allow_html=True)
-    
-    # ----------------------------------
-    # Prepare data
-    # ----------------------------------
-    
-    # Map dictionary keys to display names, providing "N/A" fallback for missing data
-    info_list = {
-        "Email": current_email,
-        "First Name": user_data.get("first_name", "N/A"),
-        "Last Name": user_data.get("last_name", "N/A"),
-        "Age": user_data.get("age", "N/A"),
-        "Gender": user_data.get("gender", "N/A")
-    }
-    
-    # Create two columns for a clean presentation
-    col_labels, col_values = st.columns([1, 2])
-    
-    # Headers - Using explicit black color (#000000) for maximum contrast
-    col_labels.markdown("<span style='color:#000000;'>**Field**</span>", unsafe_allow_html=True)
-    col_values.markdown("<span style='color:#000000;'>**Value**</span>", unsafe_allow_html=True)
-    
-    col_labels.markdown("---")
-    col_values.markdown("---")
+    # --------------------------
+    # PAGE TITLE
+    # --------------------------
+    st.markdown("## Personal Information")
+    st.write("")
 
-    # ----------------------------------
-    # Display data in a row-by-row structure
-    # ----------------------------------
-    for label, value in info_list.items():
-        # Display the field name/Label in the first column (explicitly black)
-        label_html = f"<span style='color:#000000;'>**{label}:**</span>"
-        col_labels.markdown(label_html, unsafe_allow_html=True)
-        
-        # Display the value in the second column (explicitly black)
-        value_html = f"<span style='color:#000000;'>{value}</span>"
-        col_values.markdown(value_html, unsafe_allow_html=True)
+    # --------------------------
+    # MAIN LAYOUT
+    # --------------------------
+    left_col, right_col = st.columns([1, 3])
 
+    # --------------------------
+    # PROFILE IMAGE
+    # --------------------------
+    with left_col:
+        st.write("")
+        st.markdown("<div class='profile-img' style='text-align:center;'>", unsafe_allow_html=True)
+        st.image("assets/js.jpg", width=300)
 
-    st.markdown("</div>", unsafe_allow_html=True)
-    
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    # --------------------------
+    # USER INFO FORM
+    # --------------------------
+    with right_col:
+        st.write("")
+        st.write("")
+
+        # Initialize edit mode if not present
+        if "edit_mode" not in st.session_state:
+            st.session_state.edit_mode = False
+
+        # Only show form if in edit mode or display read-only
+        if st.session_state.edit_mode:
+            email = st.text_input(
+                "Email address",
+                value=current_email,
+                disabled=True  # Email always disabled
+            )
+
+            first_name = st.text_input(
+                "First name",
+                value=user_data.get("first_name", ""),
+                disabled=False
+            )
+
+            last_name = st.text_input(
+                "Last name",
+                value=user_data.get("last_name", ""),
+                disabled=False
+            )
+
+            age = st.text_input(
+                "Age",
+                value=user_data.get("age", ""),
+                disabled=False
+            )
+
+            gender = st.text_input(
+                "Gender",
+                value=user_data.get("gender", ""),
+                disabled=False
+            )
+
+            st.write("")
+
+            # --------------------------
+            # SAVE BUTTON (ALIGNED BOTTOM-RIGHT)
+            # --------------------------
+            col1, col2 = st.columns([3, 1])
+            with col2:
+                if st.button("Save Changes"):
+                    st.session_state.users[current_email]["first_name"] = first_name
+                    st.session_state.users[current_email]["last_name"] = last_name
+                    st.session_state.users[current_email]["age"] = age
+                    st.session_state.users[current_email]["gender"] = gender
+
+                    st.success("Profile updated successfully!")
+                    # Reset edit mode after save to display read-only
+                    st.session_state.edit_mode = False
+        else:
+            # Display read-only information
+            st.write(f"**Email address:** {current_email}")
+            st.write(f"**First name:** {user_data.get('first_name', '')}")
+            st.write(f"**Last name:** {user_data.get('last_name', '')}")
+            st.write(f"**Age:** {user_data.get('age', '')}")
+            st.write(f"**Gender:** {user_data.get('gender', '')}")
+
+            st.write("")
+
+            # --------------------------
+            # EDIT BUTTON (ALIGNED BOTTOM-RIGHT)
+            # --------------------------
+            col1, col2 = st.columns([3, 1])
+            with col2:
+                if st.button("Edit Profile"):
+                    st.session_state.edit_mode = True
+
+    # --------------------------
+    # FOOTER NOTE
+    # --------------------------
     st.write("---")
-    
     st.info("Note: This profile information was saved during the signup process.")
+

@@ -1,99 +1,58 @@
 import streamlit as st  # type: ignore
-from sample_data import generate_sample_patients, is_authenticated, go_to
+
+from sample_data import generate_sample_patients, is_authenticated
 from auth import auth_entry_page, login_page, signup_page
-from dashboard import dashboard_page
+from dashboard import dashboard
 from medication_tracker import medication_page
+from schedtracker import schedule_tracker_page
 from user_info import user_info_page
 
+
+# --------------------------
+# PAGE CONFIG
+# --------------------------
 st.set_page_config(
     page_title="Healthcare DSA App",
     page_icon="⚕️",
     layout="wide"
 )
 
-# --------------------------
-# CSS / STYLING
-# --------------------------
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background: #f6fbff;
-        font-family: 'Inter', sans-serif;
-    }
-
-    .auth-card {
-        background: white;
-        margin: 60px auto;
-        padding: 28px;
-        border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(11,83,148,0.08);
-        text-align: center;
-    }
-
-    .card {
-        background: white;
-        padding: 24px;
-        border-radius: 12px;
-        box-shadow: 0 6px 18px rgba(11,83,148,0.06);
-    }
-
-    .header-title {
-        color: #0b5394;
-        font-weight: 700;
-        font-size: 22px;
-        margin-bottom: 4px;
-    }
-
-    .subtle {
-        color: #666;
-        font-size: 13px;
-        margin-bottom: 16px;
-    }
-
-    /* Center labels */
-    .center-label {
-        text-align: left;
-        font-weight: 600;
-        color: black;
-        margin-top: 8px;
-        font-size: 14px;
-    }
-
-    /* Force wider text fields by targeting the container and using !important */
-    div[data-testid="stTextInput"] > div,
-    div[data-testid="stNumberInput"] > div,
-    div[data-testid="stSelectbox"] > div {
-        width: 50% !important; 
-        margin: 0 !important;
-    }
-
-
-    div[data-testid="baseInput-container"] input[type="password"] + div,
-    div[data-testid="baseInput-container"] input[type="text"] + div {
-        margin-right: 0 !important; 
-        margin-left: auto !important; 
-        padding-right: 20px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 # --------------------------
-# SESSION STATE
+# LOAD CSS (SEPARATED)
 # --------------------------
-if "page" not in st.session_state:
-    st.session_state.page = "auth"
+def load_css(file_name: str):
+    with open(file_name) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-if "users" not in st.session_state:
-    st.session_state.users = {}
+load_css("styles.css")
 
-if "current_user" not in st.session_state:
-    st.session_state.current_user = None
 
-if "patients" not in st.session_state:
-    st.session_state.patients = generate_sample_patients(25)
+# --------------------------
+# SESSION STATE INIT
+# --------------------------
+def init_session_state():
+    defaults = {
+        "page": "auth",
+        "users": {},
+        "current_user": None,
+        "patients": generate_sample_patients(25)
+    }
+
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+init_session_state()
+
+
+# --------------------------
+# SAFE NAVIGATION
+# --------------------------
+def go_to_page(page_name: str):
+    st.session_state.page = page_name
+    st.rerun()
+
 
 # --------------------------
 # ROUTER
@@ -101,26 +60,36 @@ if "patients" not in st.session_state:
 def run_app():
     page = st.session_state.page
 
-    if page == "auth":
-        auth_entry_page()
-    elif page == "login":
-        login_page()
-    elif page == "signup":
-        signup_page()
-    else:
-        if not is_authenticated():
-            st.warning("You must log in to access that page.")
-            if st.button("Go to Login"):
-                go_to("login")
-            return
+    # ----- PUBLIC PAGES -----
+    public_pages = {
+        "auth": auth_entry_page,
+        "login": login_page,
+        "signup": signup_page
+    }
 
-        if page == "dashboard":
-            dashboard_page()
-        elif page == "medication":
-            medication_page()
-        elif page == "user_info":
-            user_info_page()
-        else:
-            go_to("dashboard")
+    if page in public_pages:
+        public_pages[page]()
+        return
 
+    # ----- AUTH CHECK -----
+    if not is_authenticated():
+        st.warning("You must log in to access that page.")
+        if st.button("Go to Login"):
+            go_to_page("login")
+        return
+
+    # ----- PROTECTED PAGES -----
+    protected_pages = {
+        "dashboard": dashboard,
+        "medication": medication_page,
+        "schedule": schedule_tracker_page,
+        "user_info": user_info_page
+    }
+
+    protected_pages.get(page, dashboard)()
+
+
+# --------------------------
+# RUN APP
+# --------------------------
 run_app()

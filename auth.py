@@ -1,29 +1,51 @@
 import streamlit as st  # type: ignore
-import time
 from sample_data import go_to
 
+
 # --------------------------
-# AUTH ENTRY PAGE
+# AUTH ENTRY PAGE (FIXED)
 # --------------------------
 def auth_entry_page():
     st.markdown("<div class='auth-card'>", unsafe_allow_html=True)
 
-    try:
-        st.image("logo.png", width=140)
-    except:
-        st.markdown(
-            "<div style='font-size:26px;font-weight:700;color:#0b5394;'>Healthcare App</div>",
-            unsafe_allow_html=True
-        )
+    col_l, col_c, col_r = st.columns([1.4, 1, 0.9]) 
+    
+    with col_c:
+        logo_container = st.container()
+        title_container = st.container()
+        subtitle_container = st.container()
 
-    st.markdown("<div class='header-title'>Welcome</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtle'>Secure healthcare system</div>", unsafe_allow_html=True)
+        with logo_container:
+            try:
+                st.image("logo.png", width=140)
+            except:
+                pass
 
-    if st.button("🔐 Login", use_container_width=True):
-        go_to("login")
+        with title_container:
+            st.markdown("", unsafe_allow_html=True)  # move DOWN
+            st.markdown(
+                 "<div class='header-title'>HEALTHCARE APP</div>",
+                  unsafe_allow_html=True
+            )
 
-    if st.button("📝 Sign Up", use_container_width=True):
-        go_to("signup")
+    colu_l, colu2_c, colu3_r = st.columns([1.5, 1, 0.9]) 
+
+    with colu2_c:
+            st.markdown(
+                "<div class='subtle'>Secure HealthCare System</div>",
+                unsafe_allow_html=True
+            )
+
+    col1_l, col2_c, col3_r = st.columns([1.6, 1.2, 1]) 
+   
+    with col2_c:
+        st.markdown('<div class="auth-buttons">', unsafe_allow_html=True)
+
+        if st.button(" Login", key="auth_login_v2"):
+            go_to("login")
+ 
+        if st.button(" Sign Up", key="auth_signup_v2"):
+            go_to("signup")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -31,11 +53,10 @@ def auth_entry_page():
 # LOGIN PAGE
 # --------------------------
 def login_page():
-    st.markdown("<div style='max-width:760px;margin:20px auto'>", unsafe_allow_html=True)
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("### 🔐 Login")
+    st.markdown("### Login")
 
-    left, center, right = st.columns([1, 2, 1])
+    _, center, _ = st.columns([1, 2, 1])
 
     with center:
         st.markdown("<div class='center-label'>Email</div>", unsafe_allow_html=True)
@@ -44,39 +65,32 @@ def login_page():
         st.markdown("<div class='center-label'>Password</div>", unsafe_allow_html=True)
         password = st.text_input("", type="password", key="login_password")
 
-    col1, col2 = st.columns([1, 1])
+        b1_left, _, b2_right = st.columns([1, 1, 1])
+    
+        with b1_left:
+            # Changed key for back button on login page
+            if st.button("← Back", key="login_back_to_auth"):
+                go_to("auth")
 
-    with col1:
-        if st.button("Log in", use_container_width=True):
-            users = st.session_state.users
-            if email in users and users[email]["password"] == password:
-                prog = st.progress(0)
-                for i in range(0, 101, 20):
-                    prog.progress(i)
-                    time.sleep(0.04)
+        with b2_right:
+            if st.button("Login"):
+                users = st.session_state.users
+                if email in users and users[email]["password"] == password:
+                    st.session_state.current_user = email
+                    st.session_state.page = "dashboard"
+                    st.rerun() 
+                else:
+                    st.error("Incorrect email or password.")
 
-                st.session_state.current_user = email
-                st.success("Login successful!")
-                go_to("dashboard")
-            else:
-                st.error("Incorrect email or password.")
-
-    with col2:
-        if st.button("Back", use_container_width=True):
-            go_to("auth")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)  # Fixed indentation: This closes the card div, so it must be outside the 'with center' block
 
 # --------------------------
 # SIGNUP PAGE
 # --------------------------
 def signup_page():
-    st.markdown("<div style='max-width:760px;margin:20px auto'>", unsafe_allow_html=True)
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("###  Create Account")
+    st.markdown("### Create Account")
 
-    left, center, right = st.columns([1, 2, 1])
+    _, center, _ = st.columns([1, 2, 1])
 
     with center:
         st.markdown("<div class='center-label'>First Name</div>", unsafe_allow_html=True)
@@ -100,30 +114,31 @@ def signup_page():
         st.markdown("<div class='center-label'>Confirm Password</div>", unsafe_allow_html=True)
         password2 = st.text_input("", type="password", key="signup_confirm")
 
-    col1, col2 = st.columns([1, 1])
+        btn_left, _, btn_right = st.columns([1, 1, 1])
 
-    with col1:
-        if st.button("Sign Up", use_container_width=True):
-            if not all([first_name, last_name, age, email, password, password2]):
-                st.warning("Please fill all fields.")
-            elif password != password2:
-                st.error("Passwords do not match.")
-            elif email in st.session_state.users:
-                st.error("Email already exists.")
-            else:
-                st.session_state.users[email] = {
-                    "password": password,
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "age": age,
-                    "gender": gender
-                }
-                st.success("Account created!")
-                go_to("login")
+        with btn_left:
+            if st.button("← Back", key="signup_back_to_auth"):
+                go_to("auth")
 
-    with col2:
-        if st.button("Back", use_container_width=True):
-            go_to("auth")
+        with btn_right:
+            if st.button("Sign Up"):
 
-    st.markdown("</div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+                if not all([first_name, last_name, age, email, password, password2]):
+                    st.warning("Please fill all fields.")
+                elif password != password2:
+                    st.error("Passwords do not match.")
+                elif email in st.session_state.users:
+                    st.error("Email already exists.")
+                else:
+                    st.session_state.users[email] = {
+                        "password": password,
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "age": age,
+                        "gender": gender
+                    }
+                    st.success("Account created!")
+                    go_to("login")
+    
+    st.markdown("</div>", unsafe_allow_html=True)  # Fixed indentation: This closes the card div, so it must be outside the 'with center' block
+

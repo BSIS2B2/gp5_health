@@ -4,13 +4,16 @@ import pandas as pd # type: ignore
 import altair as alt # type: ignore
 from datetime import datetime
 # Assuming medication_tracker.py is in the same directory and contains top_nav_bar()
-from medication_tracker import top_nav_bar 
+from medication_tracker import top_nav_bar
+from schedtracker import schedule_tracker_page  # ✅ IMPORT Schedule Tracker
+
 
 # --- DASHBOARD PAGE ---
-def dashboard_page():
+def dashboard():
     """Displays the health metric dashboard for selected patients."""
     top_nav_bar("Health Metric Dashboard")
     st.write("")  # spacing
+    st.write("---")  # spacing
 
     patients = st.session_state.patients
     patient_choices = {f"{p['id']} — {p['name']}": p for p in patients}
@@ -45,7 +48,6 @@ def dashboard_page():
         st.warning("No readings available.")
         return
 
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.write("### Combined Vitals Table (Most Recent First)")
     # Data structure usage: DataFrame sorting
     st.dataframe(df.sort_values("time", ascending=False).reset_index(drop=True), use_container_width=True)
@@ -57,7 +59,7 @@ def dashboard_page():
     st.write("### 📈 Aggregations (Averages)")
     avg = df.groupby("patient")[["hr","bp_sys","bp_dia","temp"]].mean().round(1).reset_index()
     st.table(avg)
-
+    
     st.write("### Heart Rate Trend Over Time")
     hr_chart = alt.Chart(df).mark_line(point=True).encode(
         x='time:T',
@@ -87,3 +89,5 @@ def dashboard_page():
                 trend = "stable ➡️"
         trends.append({"patient": pname, "hr_trend": trend})
     st.table(pd.DataFrame(trends))
+
+

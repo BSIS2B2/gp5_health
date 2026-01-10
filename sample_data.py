@@ -3,6 +3,7 @@ import streamlit as st # type: ignore
 import random
 from datetime import datetime, timedelta
 
+
 # --- Shared Data ---
 MEDS = [
     "Aspirin", "Metformin", "Lisinopril", "Atorvastatin",
@@ -68,3 +69,4 @@ def generate_sample_patients(n=25):
             "readings": readings
         })
     return patients
+
