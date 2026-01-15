@@ -1,0 +1,232 @@
+/* ================================
+   FONT IMPORT
+================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* ================================
+   GLOBAL APP BACKGROUND
+================================ */
+html, body, .stApp {
+    font-family: 'Inter', sans-serif;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to bottom, #b83b2e 0%, #f5dfdf 60%) !important;
+}
+
+/* ================================
+   MAIN WHITE PANEL (STREAMLIT)
+================================ */
+section.main > div:first-child {
+    background: #ffffff !important;
+    border-radius: 20px;
+    padding: 40px;
+    margin: 40px auto;
+    max-width: 1200px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* ================================
+   AUTH & GENERAL CARD
+================================ */
+.card,
+.auth-card {
+    background: #b83b2e;
+    max-width: 420px;
+    width: 100%;
+    margin: 80px auto;
+    padding: 35px;
+    border-radius: 18px;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.15);
+}
+
+.logo{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    height: 80px;
+    border-radius: 10px; /* optional */
+}
+
+
+/* ================================
+   TEXT STYLES
+================================ */
+.header-title {
+    color: #b83b2e;
+    font-weight: 700;
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.subtle {
+    color: #666666;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.center-label {
+    font-weight: 600;
+    color: #000000;
+    margin-top: 8px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.center {
+    text-align: right;
+}
+
+/* ================================
+   INPUT FIELDS
+================================ */
+input, textarea, select {
+    background-color: #f5f5f5;
+    border: 1px solid #cbd6eb;
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: #000000;
+    font-size: 14px;
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #888888;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+}
+
+::placeholder {
+    color: #888888;
+}
+
+/* ================================
+   PASSWORD FIELDS
+================================ */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+input[type="password"] {
+    -webkit-text-security: disc !important;
+}
+
+/* ================================
+   BUTTON BASE
+================================ */
+.stApp div.stButton > button {
+    width: 220px;
+    height: 42px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.stApp div.stButton > button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ================================
+   PRIMARY BUTTON
+================================ */
+.primary > div > button {
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+}
+
+/* ================================
+   SECONDARY BUTTON
+================================ */
+.secondary > div > button {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1.5px solid #000000;
+}
+
+/* =====================================================
+   PROFILE DASHBOARD & SYSTEM OVERVIEW
+===================================================== */
+
+.profile-welcome {
+    margin-bottom: 25px;
+}
+
+.profile-card {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.profile-card h2, .profile-name {
+    margin: 10;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.profile-email {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 14px;
+}
+
+.profile-card p, .profile-info p {
+    margin: 8px 0;
+    font-size: 20px;
+}
+
+.status-active {
+    color: green;
+    font-weight: 600;
+}
+
+.avatar-circle {
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 52px;
+    font-weight: 700;
+    color: #555;
+}
+
+.system-box {
+    margin-top: 40px;
+    padding: 25px;
+    max-width: 360px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #ddd;
+    position: relative;
+    top: 120px;
+    justify-content: center; 
+    align-items: center;
+    height: 20;
+}
+
+.system-box h4 {
+    margin-bottom: 20px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-top: 12px;
+}
