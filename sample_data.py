@@ -37,7 +37,7 @@ def random_schedule_times(count=3):
         times.append(t)
     return sorted(list(set(times)))[:count]
 
-def generate_sample_patients(n=25):
+def generate_sample_patients(n=20):
     """Generates a list of sample patient data."""
     patients = []
     for i in range(n):

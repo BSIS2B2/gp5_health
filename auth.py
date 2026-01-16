@@ -1,3 +1,4 @@
+#auth.py
 import streamlit as st  # type: ignore
 from sample_data import go_to
 
@@ -17,7 +18,7 @@ def auth_entry_page():
 
         with logo_container:
             try:
-                st.image("assets/logo.png", width=450)
+                st.image("assets/logo.png", width=550)
             except:
                 pass
             
@@ -44,9 +45,11 @@ def auth_entry_page():
 
         if st.button(" Login", key="auth_login_v2"):
             go_to("login")
+            st.rerun()
  
         if st.button(" Sign Up", key="auth_signup_v2"):
             go_to("signup")
+            st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -65,7 +68,7 @@ def login_page():
 
         with logo_container:
             try:
-                st.image("assets/logo.png", width=450)
+                st.image("assets/logo.png", width=550)
             except:
                 pass
     st.markdown("### Login")
@@ -85,6 +88,7 @@ def login_page():
             # Changed key for back button on login page
             if st.button("← Back", key="login_back_to_auth"):
                 go_to("auth")
+                st.rerun()
 
         with b2_right:
             if st.button("Login"):
@@ -147,6 +151,7 @@ def signup_page():
         with btn_left:
             if st.button("← Back", key="signup_back_to_auth"):
                 go_to("auth")
+                st.rerun()
 
         with btn_right:
             if st.button("Sign Up"):
@@ -167,5 +172,6 @@ def signup_page():
                     }
                     st.success("Account created!")
                     go_to("login")
+                    st.rerun()
     
     st.markdown("</div>", unsafe_allow_html=True)  # Fixed indentation: This closes the card div, so it must be outside the 'with center' block

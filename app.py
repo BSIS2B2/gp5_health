@@ -1,3 +1,4 @@
+#app.py
 import streamlit as st  # type: ignore
 
 from sample_data import generate_sample_patients, is_authenticated
@@ -14,18 +15,20 @@ from user_info import user_info_page
 st.set_page_config(
     page_title="Healthcare DSA App",
     page_icon="⚕️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 
 # --------------------------
 # LOAD CSS (SEPARATED)
 # --------------------------
+@st.cache_resource
 def load_css(file_name: str):
     with open(file_name) as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+        return f"<style>{f.read()}</style>"
 
-load_css("styles.css")
+st.markdown(load_css("styles.css"), unsafe_allow_html=True)
 
 
 # --------------------------
@@ -51,7 +54,6 @@ init_session_state()
 # --------------------------
 def go_to_page(page_name: str):
     st.session_state.page = page_name
-    st.rerun()
 
 
 # --------------------------
@@ -75,7 +77,7 @@ def run_app():
     if not is_authenticated():
         st.warning("You must log in to access that page.")
         if st.button("Go to Login"):
-            go_to_page("login")
+            st.session_state.page = "login"
         return
 
     # ----- PROTECTED PAGES -----
