@@ -11,18 +11,18 @@ def schedule_tracker_page():
     Centralized Schedule Tracker with:
     - Time-based medication alerts
     - Missed vitals alerts (pending in red, taken ✅)
-    - Dismiss feature for medication alerts
+    - Admin Alerts Summary shows only pending medications and vitals
     """
     top_nav_bar("Schedule Tracker")
     st.write("")
+
+    now = datetime.now()
 
     # ---------------- SESSION STATE ----------------
     if "dismissed_meds" not in st.session_state:
         st.session_state["dismissed_meds"] = set()
     if "data_updated" not in st.session_state:
         st.session_state["data_updated"] = "init"
-    if "missed_vitals" not in st.session_state:
-        st.session_state["missed_vitals"] = []
 
     # ---------------- PATIENT DATA ----------------
     patients = st.session_state.get("patients", [])
@@ -41,8 +41,6 @@ def schedule_tracker_page():
     )
     st.write("---")
 
-    now = datetime.now()
-
     # ---------------- TIME-BASED MISSED MEDICATION ALERT ----------------
     st.write("### 🚨 Missed Medication Alerts")
     missed_meds = []
@@ -53,28 +51,27 @@ def schedule_tracker_page():
             if not scheduled_time:
                 continue
 
-            if now > scheduled_time:
-                last_taken = med.get("last_taken")
-                was_taken = False
-                if last_taken:
-                    try:
-                        last_taken_dt = datetime.strptime(last_taken, "%Y-%m-%d %H:%M")
-                        if last_taken_dt >= scheduled_time:
-                            was_taken = True
-                    except:
-                        pass
+            last_taken = med.get("last_taken")
+            was_taken = False
+            if last_taken:
+                try:
+                    last_taken_dt = datetime.strptime(last_taken, "%Y-%m-%d %H:%M")
+                    if last_taken_dt >= scheduled_time:
+                        was_taken = True
+                except:
+                    pass
 
-                alert_id = f"{patient['name']}_{med['name']}_{scheduled_time}"
+            alert_id = f"{patient['name']}_{med['name']}_{scheduled_time}"
 
-                if not was_taken and alert_id not in st.session_state["dismissed_meds"]:
-                    missed_meds.append({
-                        "id": alert_id,
-                        "Patient": patient["name"],
-                        "Medication": med["name"],
-                        "Dose": med.get("dose", ""),
-                        "Scheduled Time": scheduled_time.strftime("%H:%M"),
-                        "Minutes Late": int((now - scheduled_time).total_seconds() // 60)
-                    })
+            if not was_taken and alert_id not in st.session_state["dismissed_meds"]:
+                missed_meds.append({
+                    "id": alert_id,
+                    "Patient": patient["name"],
+                    "Medication": med["name"],
+                    "Dose": med.get("dose", ""),
+                    "Scheduled Time": scheduled_time.strftime("%H:%M"),
+                    "Minutes Late": int((now - scheduled_time).total_seconds() // 60)
+                })
 
     if missed_meds:
         for m in missed_meds:
@@ -93,79 +90,24 @@ def schedule_tracker_page():
 
     st.write("---")
 
-    # ---------------- SCHEDULE OVERVIEW ----------------
-    schedule_heap = []
-    upcoming = []
-    missed = []
-    admin_alerts = []
-
-    # Medications
-    for med in patient.get("medications", []):
-        for t in med.get("times", []):
-            dt = _parse_time(t)
-            if dt:
-                heapq.heappush(
-                    schedule_heap,
-                    ((dt - now).total_seconds(), dt, "Medication", med["name"])
-                )
-
-    # Latest readings
-    for reading in patient.get("readings", [])[-3:]:
-        dt = _parse_time(reading.get("time", ""))
-        if dt:
-            heapq.heappush(
-                schedule_heap,
-                ((dt - now).total_seconds(), dt, "Vitals Check", "Vitals Review")
-            )
-
-    # Process heap
-    while schedule_heap:
-        secs, dt, s_type, label = heapq.heappop(schedule_heap)
-        time_str = dt.strftime("%Y-%m-%d %H:%M")
-
-        if secs < 0:
-            missed.append({
-                "Type": s_type,
-                "Task": label,
-                "Time": time_str
-            })
-            admin_alerts.append(f" Missed {s_type}: {label} at {dt.strftime('%H:%M')}")
-        else:
-            upcoming.append({
-                "Type": s_type,
-                "Task": label,
-                "Time": time_str,
-                "Minutes Left": int(secs // 60)
-            })
-
-    # ---------------- EMERGENCY CHECKS ----------------
+    # ----------------- EMERGENCY CHECKS ----------------
+    st.write("### Emergency Alerts")
     emergency_alerts = []
     if patient.get("readings"):
         latest = patient["readings"][-1]
         if latest.get("hr", 0) > 100:
             emergency_alerts.append(" High Heart Rate Detected")
-            admin_alerts.append(f" High Heart Rate: {latest['hr']} bpm")
         if latest.get("temp", 0) > 38:
             emergency_alerts.append(" High Temperature Alert")
-            admin_alerts.append(f" High Temperature: {latest['temp']} °C")
 
-    # ---------------- DISPLAY SECTIONS ----------------
-    st.write("### Emergency Alerts")
     if emergency_alerts:
         for alert in emergency_alerts:
             st.error(alert)
     else:
         st.success("✅ No emergency alerts.")
 
-    st.write("### Upcoming Schedules")
-    if upcoming:
-        st.dataframe(pd.DataFrame(upcoming), use_container_width=True)
-    else:
-        st.info("No upcoming schedules.")
-
-    # ----------------- MISSED VITALS (Latest per vital, selected patient only) -----------------
+    # ----------------- MISSED VITALS ----------------
     st.write("### Missed Vitals")
-
     patient_vitals = patient.get("vitals", [])
     if not patient_vitals:
         st.success("✅ No vitals recorded for this patient.")
@@ -200,6 +142,20 @@ def schedule_tracker_page():
 
     # ----------------- ADMIN ALERTS SUMMARY -----------------
     st.write("### Admin Alerts Summary")
+    admin_alerts = []
+
+    # Only include pending medications
+    for med in patient.get("medications", []):
+        last_taken = med.get("last_taken")
+        if not last_taken:
+            admin_alerts.append(f"💊 Medication: {med['name']} (Pending)")
+
+    # Only include pending vitals
+    for vital in patient.get("vitals", []):
+        status = vital.get("status", "Pending")
+        if status != "Taken":
+            admin_alerts.append(f"❤️ Vital: {vital['name']} (Pending)")
+
     if admin_alerts:
         for alert in admin_alerts:
             st.error(alert)

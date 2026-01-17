@@ -13,7 +13,7 @@ def sync_patients(patients):
 # NAVIGATION BAR
 # ----------------------------------------
 def top_nav_bar(title=""):
-    cols = st.columns([3, 1, 1, 1, 1, 1])
+    cols = st.columns([1.5, 1, 1, 1, 1, 1])
     with cols[0]:
         st.markdown(
             f"<div style='font-size:20px; color:#0b5394; font-weight:700'>{title}</div>",
@@ -127,10 +127,10 @@ def medication_page():
 
             btn_col1, btn_col2 = c5.columns(2)
 
-            if btn_col1.button("📝 Edit", key=f"edit_{idx}"):
+            if btn_col1.button(" Edit", key=f"edit_{idx}"):
                 st.session_state[f"editing_{idx}"] = True
 
-            if btn_col2.button("🗑️ Delete", key=f"del_{idx}"):
+            if btn_col2.button(" Delete", key=f"del_{idx}"):
                 meds.pop(idx)
                 sync_patients(patients)
                 st.warning(f"Deleted {med['name']}")
