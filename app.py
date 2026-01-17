@@ -1,6 +1,5 @@
 #app.py
 import streamlit as st  # type: ignore
-
 from sample_data import generate_sample_patients, is_authenticated
 from auth import auth_entry_page, login_page, signup_page
 from dashboard import dashboard

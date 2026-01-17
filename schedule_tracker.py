@@ -77,10 +77,10 @@ def schedule_tracker_page():
         for m in missed_meds:
             with st.container():
                 st.error(
-                    f"🚑 **Patient:** {m['Patient']}\n"
-                    f"💊 **Medication:** {m['Medication']} {m['Dose']}\n"
-                    f"⏰ **Missed at:** {m['Scheduled Time']}\n"
-                    f"⏳ **Late by:** {m['Minutes Late']} minutes"
+                    f" **Patient:** {m['Patient']}\n"
+                    f" **Medication:** {m['Medication']} {m['Dose']}\n"
+                    f"**Missed at:** {m['Scheduled Time']}\n"
+                    f"**Late by:** {m['Minutes Late']} minutes"
                 )
                 if st.button("Dismiss Alert", key=m["id"]):
                     st.session_state["dismissed_meds"].add(m["id"])
