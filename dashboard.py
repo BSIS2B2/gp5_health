@@ -10,15 +10,19 @@ from medication_tracker import top_nav_bar
 # HELPERS
 # ----------------------------------------
 @st.cache_data(ttl=10)
-def process_patient_readings(patients_data):
+def process_patient_readings(patients_data, data_updated):
+    # data_updated ensures cache invalidation when medication is updated
     records = []
     for p in patients_data:
         readings = p.get("readings", [])
         if readings:
-            latest = readings[-1]  # latest reading only for unique patient display
+            latest = readings[-1]  # latest reading only
             records.append({
                 "patient": p.get("name", "N/A"),
-                "time": datetime.strptime(latest.get("time", "2026-01-01 00:00"), "%Y-%m-%d %H:%M"),
+                "time": datetime.strptime(
+                    latest.get("time", "2026-01-01 00:00"),
+                    "%Y-%m-%d %H:%M"
+                ),
                 "Heart Rate": latest.get("hr", 0),
                 "BP Systolic": latest.get("bp_sys", 0),
                 "BP Diastolic": latest.get("bp_dia", 0),
@@ -59,6 +63,16 @@ def _create_patient():
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
 
         st.markdown("###  Initial Vitals (Optional)")
+
+        # ---------------------------
+        # DATETIME INPUT FOR VITALS
+        # ---------------------------
+        vitals_time = st.datetime_input(
+            "Record Time (Optional)", 
+            value=datetime.now(),
+            help="Set the date and time for these vitals"
+        )
+
         hr = st.number_input("Heart Rate (bpm)", 30, 200)
         bp_sys = st.number_input("BP Systolic (mmHg)", 80, 200)
         bp_dia = st.number_input("BP Diastolic (mmHg)", 40, 150)
@@ -84,9 +98,12 @@ def _create_patient():
                 "schedules": []
             }
 
+            # ---------------------------
+            # APPEND INITIAL VITALS
+            # ---------------------------
             if hr or bp_sys or bp_dia or temp:
                 new_patient["readings"].append({
-                    "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                    "time": vitals_time.strftime("%Y-%m-%d %H:%M"),
                     "hr": hr,
                     "bp_sys": bp_sys,
                     "bp_dia": bp_dia,
@@ -94,8 +111,8 @@ def _create_patient():
                 })
 
             st.session_state.patients.append(new_patient)
+            st.session_state.data_updated = datetime.now().isoformat()  # sync fix
 
-            # Auto-select new patient for view
             st.session_state.selected_patient = name
             st.session_state.crud_action = "read"
             st.success(f"Patient {name} added ✅")
@@ -162,7 +179,6 @@ def _read_patient():
         }, inplace=True)
         st.dataframe(vitals_df, use_container_width=True)
 
-        # Heart Rate Trend for selected patient
         st.subheader("Heart Rate Trend")
         chart = alt.Chart(vitals_df).mark_line(point=True).encode(
             x="Recorded At:T",
@@ -209,6 +225,7 @@ def _update_patient():
                 "bp_dia": bp_dia,
                 "temp": temp
             })
+            st.session_state.data_updated = datetime.now().isoformat()  # sync fix
             st.success("Patient updated with new vitals ✅")
             st.rerun()
 
@@ -226,11 +243,12 @@ def _delete_patient():
         st.session_state.patients = [
             p for p in st.session_state.patients if p.get("name") != selected
         ]
+        st.session_state.data_updated = datetime.now().isoformat()  # sync fix
         st.success("Deleted")
         st.rerun()
 
 # ----------------------------------------
-# DASHBOARD
+# DASHBOARD PAGE
 # ----------------------------------------
 def dashboard():
     if "patients" not in st.session_state:
@@ -239,33 +257,30 @@ def dashboard():
         st.session_state.crud_action = None
     if "selected_patient" not in st.session_state:
         st.session_state.selected_patient = None
+    if "data_updated" not in st.session_state:
+        st.session_state.data_updated = "init"
 
     top_nav_bar("Health Metric Dashboard")
     st.divider()
 
-    # ---------- RIGHT SIDE HORIZONTAL CRUD BUTTONS ----------
     _, right = st.columns([7, 3])
     with right:
         b1, b2, b3, b4 = st.columns([1, 1, 1, 1])
         with b1:
             if st.button("✚", help="Add Patient", key="btn_add"):
                 st.session_state.crud_action = "create"
-                st.session_state.selected_patient = None
         with b2:
             if st.button("👁️‍🗨️", help="View Patient", key="btn_view"):
                 st.session_state.crud_action = "read"
         with b3:
             if st.button("✎", help="Edit Patient", key="btn_edit"):
                 st.session_state.crud_action = "update"
-                st.session_state.selected_patient = None
         with b4:
             if st.button("⌫", help="Delete Patient", key="btn_delete"):
                 st.session_state.crud_action = "delete"
-                st.session_state.selected_patient = None
 
     st.divider()
 
-    # ---------- EXECUTE CRUD ----------
     action = st.session_state.crud_action
     if action == "create":
         _create_patient()
@@ -276,10 +291,12 @@ def dashboard():
     elif action == "delete":
         _delete_patient()
 
-    # ---------- GENERAL DASHBOARD VITALS TABLE (Top 20 PT) ----------
-    if st.session_state.crud_action not in ["update", "read", "create"]:
-        patients = st.session_state.patients[:20]  # Top 20
-        records = process_patient_readings(tuple(patients))
+    if action not in ["update", "read", "create"]:
+        patients = st.session_state.patients[:20]
+        records = process_patient_readings(
+            tuple(patients),
+            st.session_state.data_updated
+        )
         df = pd.DataFrame(records)
 
         if not df.empty:
